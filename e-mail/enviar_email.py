@@ -47,6 +47,7 @@ while True:
                 r'C:\Users\lucas\Documents\Programação\Projeto COVID-19\index.html')
 
         with open(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\push_automatico\upar_dados.py', "r") as f:
+            print('Atualizando dados...')
             exec(f.read())
 
         print('Push feito com sucesso.')
