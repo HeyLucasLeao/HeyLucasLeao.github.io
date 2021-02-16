@@ -10,6 +10,7 @@ from os import replace
 from enderecos import emails
 from estrutura import mensagem
 from conversor_ipynb_para_html import converter
+from subprocess import call
 
 EMAIL_PASSWORD = environ.get("EMAIL_PASS")
 EMAIL_ADDRESS = environ.get("EMAIL_USER")
@@ -45,16 +46,21 @@ while True:
         replace(r'C:\Users\lucas\Documents\Programação\Projeto COVID-19\ipynb\relatorio.html',
                 r'C:\Users\lucas\Documents\Programação\Projeto COVID-19\index.html')
 
+        with open(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\push_automatico\upar_dados.py', "r") as f:
+            exec(f.read())
+
+        print('Push feito com sucesso.')
+        sleep(30)
+
         with open(r'C:\Users\lucas\Documents\Programação\Projeto COVID-19\index.html', "rb") as f:
             file_data = f.read()
             file_name = f"Relatório COVID-19 BRA & AM: {data}.html"
+
         msg = EmailMessage()
         msg['Subject'] = f"Relatório de COVID-19 BRA & AM: {data}"
         msg['From'] = EMAIL_ADDRESS
         msg['To'] = emails
         msg.set_content(mensagem)
-        msg.add_attachment(file_data.decode('utf-8'),
-                           subtype='html', filename=file_name)
 
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
             smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)

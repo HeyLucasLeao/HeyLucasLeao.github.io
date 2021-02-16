@@ -1,6 +1,5 @@
 from git import Repo
 from os import environ
-import datetime as dt
 
 user = environ.get('GITHUB_USER')
 password = environ.get('GITHUB_PASSWORD')
