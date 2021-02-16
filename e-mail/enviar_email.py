@@ -6,6 +6,7 @@ import pandas as pd
 from time import sleep
 import datetime as dt
 from os import replace
+import subprocess as cmd
 
 from enderecos import emails
 from estrutura import mensagem
@@ -44,6 +45,12 @@ while True:
 
         replace(r'C:\Users\lucas\Documents\Programação\Projeto COVID-19\ipynb\relatorio.html',
                 r'C:\Users\lucas\Documents\Programação\Projeto COVID-19\index.html')
+
+        cmd.run(f"git add .", check=True, Shell=True)
+        cmd.run(f"git commit -m 'index.html'", check=True, Shell=True)
+        cmd.run("git push -u origin master -f", check=True, shell=True)
+        sleep(10)
+        print('site emitido com sucesso.')
 
         with open(r'C:\Users\lucas\Documents\Programação\Projeto COVID-19\index.html', "rb") as f:
             file_data = f.read()
