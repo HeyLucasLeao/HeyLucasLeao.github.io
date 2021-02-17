@@ -60,7 +60,7 @@ while True:
         msg = EmailMessage()
         msg['Subject'] = f"Relatório de COVID-19 BRA & AM: {data}"
         msg['From'] = EMAIL_ADDRESS
-        msg['To'] = emails
+        msg['To'] = 'ilolt.llol@gmail.com'
         msg.set_content(mensagem)
 
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:

@@ -13,7 +13,7 @@ def git_push():
         repo = Repo(
             path=PATH)
         repo.git.add(PATH, update=True)
-        repo.index.commit(f"Relatório {dt.datetime.now()}")
+        repo.index.commit(f"BOT")
         origin = repo.remote(name='origin')
         origin.push()
     except:
