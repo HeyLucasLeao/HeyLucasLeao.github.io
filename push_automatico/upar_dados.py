@@ -4,7 +4,7 @@ import datetime as dt
 
 user = environ.get('GITHUB_USER')
 password = environ.get('GITHUB_PASSWORD')
-PATH = environ.get('GIT_PATH')
+PATH = environ.get('REPO_PATH')
 remote = f"https://{user}:{password}@github.com:HeyLucasLeao/HeyLucasLeao.github.io.git"
 
 
