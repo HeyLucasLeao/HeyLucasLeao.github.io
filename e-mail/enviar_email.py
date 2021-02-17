@@ -43,8 +43,8 @@ while True:
         except TimeoutError:
             raise SystemExit(0)
 
-        replace(r'C:\Users\lucas\Documents\Programação\Projeto COVID-19\ipynb\relatorio.html',
-                r'C:\Users\lucas\Documents\Programação\Projeto COVID-19\index.html')
+        replace(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\ipynb\relatorio.html',
+                r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\index.html')
 
         with open(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\push_automatico\upar_dados.py', "r") as f:
             print('Atualizando dados...')
@@ -53,14 +53,14 @@ while True:
         print('Push feito com sucesso.')
         sleep(30)
 
-        with open(r'C:\Users\lucas\Documents\Programação\Projeto COVID-19\index.html', "rb") as f:
+        with open(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\index.html', "rb") as f:
             file_data = f.read()
             file_name = f"Relatório COVID-19 BRA & AM: {data}.html"
 
         msg = EmailMessage()
         msg['Subject'] = f"Relatório de COVID-19 BRA & AM: {data}"
         msg['From'] = EMAIL_ADDRESS
-        msg['To'] = 'ilolt.llol@gmail.com'
+        msg['To'] = 'heybotleaum@gmail.com'
         msg.set_content(mensagem)
 
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
