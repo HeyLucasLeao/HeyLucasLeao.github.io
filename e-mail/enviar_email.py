@@ -4,27 +4,32 @@ from os import environ
 from time import sleep
 from datetime import datetime
 
-from enderecos import emails
-from estrutura import mensagem
-
-
-EMAIL_PASSWORD = environ.get("EMAIL_PASS")
+enderecos_de_usuarios = environ.get("ADRESS_USERS")
+emails = enderecos_de_usuarios.split(',')
 EMAIL_ADDRESS = environ.get("EMAIL_USER")
-
+EMAIL_PASSWORD = environ.get("EMAIL_PASS")
 data = str(datetime.now())[:10]
+mensagem = ""
+
+
+with open(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\e-mail\estrutura.txt', "r", encoding='utf8') as f:
+
+    for line in f:
+        mensagem += line
 
 
 def enviar():
+    print("Enviando e-mails...")
     msg = EmailMessage()
-    msg['Subject'] = f"Relatório de COVID-19 BRA & AM: {data}"
+    msg['Subject'] = f"COVID-19 BRA & AM: {data}"
     msg['From'] = EMAIL_ADDRESS
     msg['To'] = 'ilolt.llol@gmail.com'  # emails
     msg.set_content(mensagem)
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
         smtp.send_message(msg)
-    print("E-mail enviado com sucesso. \nProcesso finalizado.")
-    sleep(10)
+    print("E-mails enviados com sucesso.")
 
 
 enviar()
+sleep(10)
