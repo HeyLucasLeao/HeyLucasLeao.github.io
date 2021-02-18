@@ -23,7 +23,7 @@ def enviar():
     msg = EmailMessage()
     msg['Subject'] = f"COVID-19 BRA & AM: {data}"
     msg['From'] = EMAIL_ADDRESS
-    msg['To'] = 'ilolt.llol@gmail.com'  # emails
+    msg['To'] = emails
     msg.set_content(mensagem)
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
