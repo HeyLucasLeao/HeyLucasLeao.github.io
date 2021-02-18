@@ -12,7 +12,7 @@ data = str(datetime.now())[:10]
 mensagem = ""
 
 
-with open(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\e-mail\estrutura.txt', "r", encoding='utf8') as f:
+with open(r'HeyLucasLeao.github.io\e-mail\estrutura.txt', "r", encoding='utf8') as f:
 
     for line in f:
         mensagem += line

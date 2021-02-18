@@ -2,7 +2,6 @@ import pandas as pd
 import datetime as dt
 from os import system
 from time import sleep
-from os import replace
 
 x = 0
 
@@ -30,22 +29,19 @@ while True:
 
     if soma_casos > 0 and df_estado_soma_casos > 0:
         try:
-            with open(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\conversor_ipynb_html\converter.py', "r") as f:
+            with open(r'HeyLucasLeao.github.io\conversor_ipynb_html\converter.py', "r") as f:
                 exec(f.read())
         except TimeoutError:
             raise SystemExit(0)
 
-        replace(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\ipynb\relatorio.html',
-                r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\index.html')
-
-        with open(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\push_automatico\upar_dados.py', "r") as f:
+        with open(r'HeyLucasLeao.github.io\push_automatico\upar_dados.py', "r") as f:
             print('Atualizando dados...')
             exec(f.read())
 
         print('Push feito com sucesso.')
         sleep(30)
 
-        with open(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\e-mail\enviar_email.py', "r") as f:
+        with open(r'HeyLucasLeao.github.io\e-mail\enviar_email.py', "r") as f:
             exec(f.read())
             break
     else:
