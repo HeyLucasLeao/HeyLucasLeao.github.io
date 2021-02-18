@@ -9,8 +9,7 @@ from os import replace
 
 from enderecos import emails
 from estrutura import mensagem
-from conversor_ipynb_para_html import converter
-from subprocess import call
+
 
 EMAIL_PASSWORD = environ.get("EMAIL_PASS")
 EMAIL_ADDRESS = environ.get("EMAIL_USER")
@@ -39,7 +38,8 @@ while True:
         continue
     if soma_casos > 0 and df_estado_soma_casos > 0:
         try:
-            converter()
+            with open(r'C:\Users\lucas\Documents\GitHub\HeyLucasLeao.github.io\conversor_ipynb_html\converter.py', "r") as f:
+                exec(f.read())
         except TimeoutError:
             raise SystemExit(0)
 
@@ -60,7 +60,7 @@ while True:
         msg = EmailMessage()
         msg['Subject'] = f"Relatório de COVID-19 BRA & AM: {data}"
         msg['From'] = EMAIL_ADDRESS
-        msg['To'] = emails
+        msg['To'] = 'ilolt.llol@gmail.com'  # emails
         msg.set_content(mensagem)
 
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
