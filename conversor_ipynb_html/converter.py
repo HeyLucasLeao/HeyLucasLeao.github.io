@@ -1,13 +1,16 @@
 from subprocess import Popen
 from os import replace
+from os import environ
+
+PREFIX_PATH = environ.get('REPO_PATH')
 
 
 def converter():
     Popen.wait(Popen('jupyter nbconvert --to html --ExecutePreprocessor.enabled=True relatorio.ipynb --no-input',
-                     cwd=r'HeyLucasLeao.github.io\ipynb'), timeout=360)
+                     cwd=PREFIX_PATH + r'\ipynb'), timeout=360)
 
-    replace(r'HeyLucasLeao.github.io\ipynb\relatorio.html',
-            r'HeyLucasLeao.github.io\index.html')
+    replace(PREFIX_PATH + r'\ipynb\relatorio.html',
+            PREFIX_PATH + r'\index.html')
 
 
 converter()
