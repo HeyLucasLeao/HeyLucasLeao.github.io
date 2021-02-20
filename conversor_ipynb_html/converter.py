@@ -16,5 +16,5 @@ def converter():
 
 
 converter()
-print('ipynb convertido, index.html criado.')
+print('Jupyter Notebook convertido, index.html criado.')
 sleep(10)
