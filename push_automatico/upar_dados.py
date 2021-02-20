@@ -10,6 +10,7 @@ remote = f"https://{user}:{password}@github.com:HeyLucasLeao/HeyLucasLeao.github
 
 def git_push():
     try:
+        print('Atualizando dados...')
         repo = Repo(
             path=PATH)
         repo.git.add(PATH, update=True)
@@ -21,3 +22,5 @@ def git_push():
 
 
 git_push()
+print('Push feito com sucesso.')
+sleep(30)
