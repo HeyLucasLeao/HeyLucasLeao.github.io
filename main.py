@@ -38,11 +38,7 @@ while True:
             raise SystemExit(0)
 
         with open(PREFIX_PATH + r'\push_automatico\upar_dados.py', "r") as f:
-            print('Atualizando dados...')
             exec(f.read())
-
-        print('Push feito com sucesso.')
-        sleep(30)
 
         with open(PREFIX_PATH + r'\e-mail\enviar_email.py', "r") as f:
             exec(f.read())

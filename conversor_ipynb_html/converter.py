@@ -1,11 +1,13 @@
 from subprocess import Popen
 from os import replace
 from os import environ
+from time import sleep
 
 PREFIX_PATH = environ.get('REPO_PATH')
 
 
 def converter():
+    print('Atualizando dados...')
     Popen.wait(Popen('jupyter nbconvert --to html --ExecutePreprocessor.enabled=True relatorio.ipynb --no-input',
                      cwd=PREFIX_PATH + r'\ipynb'), timeout=360)
 
@@ -14,3 +16,5 @@ def converter():
 
 
 converter()
+print('Push feito com sucesso.')
+sleep(30)
