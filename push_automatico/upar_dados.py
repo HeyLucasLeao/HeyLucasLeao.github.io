@@ -23,4 +23,4 @@ def git_push():
 
 git_push()
 print('Push feito com sucesso.')
-sleep(30)
+sleep(15)
