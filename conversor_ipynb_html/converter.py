@@ -9,7 +9,7 @@ PREFIX_PATH = environ.get('REPO_PATH')
 def converter():
     print('Convertendo ipynb...')
     Popen.wait(Popen('jupyter nbconvert --to html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=360 relatorio.ipynb --no-input',
-                     cwd=PREFIX_PATH + r'\ipynb'), timeout=360)
+                     cwd=PREFIX_PATH + r'\ipynb', shell=True), timeout=360)
 
     replace(PREFIX_PATH + r'\ipynb\relatorio.html',
             PREFIX_PATH + r'\index.html')
