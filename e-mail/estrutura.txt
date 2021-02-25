@@ -2,10 +2,9 @@ Relatório Interativo.
 Preferível pelo PC. 
 Caso queira pelo celular, selecione no navegador para visualizar a versão para computador.
 
-[Atualização de Gráfico]: Inserido ao gráfico "Novos Casos & Óbitos de COVID-19 no Amazonas" a
-predição de novos casos para os 07 dias seguintes, utilizando modelo KNN para regressão, com janela de 7 dias
-e 12 clusters. Ele sempre terá erro percentual, não o utilize seus valores exatos como critério, mas sim sua projeção
-como forma paramétrica.
+[NOVO Gráfico]: Inserido um gráfico representado previsões de número de casos para os próximos 7 dias,
+feito a partir de algoritmos de aprendizado de máquina. Os algoritmos selecionados foram KNN e RF. Para mais informações,
+só entrar em contato comigo.
 
 Link: https://heylucasleao.github.io/
 
