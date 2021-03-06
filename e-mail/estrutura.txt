@@ -2,10 +2,6 @@ Relatório Interativo.
 Preferível pelo PC. 
 Caso queira pelo celular, selecione no navegador para visualizar a versão para computador.
 
-[NOVO Gráfico]: Inserido um gráfico representado previsões de número de casos para os próximos 7 dias,
-feito a partir de algoritmos de aprendizado de máquina. Os algoritmos selecionados foram KNN e RF. Para mais informações,
-só entrar em contato comigo.
-
 Link: https://heylucasleao.github.io/
 
 Para entrar em contato comigo: https://t.me/heylucasleao
