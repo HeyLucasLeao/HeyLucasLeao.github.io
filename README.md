@@ -7,5 +7,7 @@ Projeto pessoal para fins educativos com finalidade de uma anal√≠se extensa, cr√
  
  
 Contato: https://t.me/heylucasleao
+
 E-mail Comercial: heylucasleao@gmail.com
+
 Linkedin: https://www.linkedin.com/in/lucas-le%C3%A3o-698a49206/
