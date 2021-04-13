@@ -4,7 +4,8 @@ from os import environ
 from time import sleep
 
 PREFIX_PATH = environ.get('REPO_PATH')
-
+"""conversão do notebook para HTML, sem quaisquer código, 
+facilitando visualização de resultado para leitores não-programadores."""
 
 def converter():
     print('Convertendo ipynb...')

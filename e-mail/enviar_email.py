@@ -4,6 +4,9 @@ from os import environ
 from time import sleep
 from datetime import datetime
 
+"""envio um alerta sobre atualização do relatório 
+para pessoas próximas, utilizando um gmail bot"""
+
 enderecos_de_usuarios = environ.get("ADRESS_USERS")
 emails = enderecos_de_usuarios.split(',')
 EMAIL_ADDRESS = environ.get("EMAIL_USER")

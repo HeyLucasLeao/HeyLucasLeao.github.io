@@ -2,6 +2,8 @@ from git import Repo
 from os import environ
 from time import sleep
 
+"""inicia um push direto ao repo."""
+
 user = environ.get('GITHUB_USER')
 password = environ.get('GITHUB_PASSWORD')
 PATH = environ.get('REPO_PATH')

@@ -8,6 +8,9 @@ x = 0
 
 PREFIX_PATH = environ.get('REPO_PATH')
 
+"""verifica caso haja dados atualizados dentro do dataset. 
+Caso seja verdade, inicia-se abertura dos outros algoritmos."""
+
 while True:
     try:
         url = 'https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-cities.csv'
