@@ -1,0 +1,54 @@
+max_prediction_length:
+  desc: Maximum Number of Periods Predicted
+  value: 7
+max_encoder_length:
+  desc: Maximum Number Periods used as Input
+  value: 180
+max_epochs:
+  desc: Maximum Number of Epochs for fitting
+  value: 50
+gradient_clip_val:
+  desc: Gradient Clip Value provided to pytorch trainer
+  value: 0.03
+learning_rate:
+  desc: Learning Rate used for training
+  value: 0.03
+hidden_size:
+  desc: Number of hidden layers in network
+  value: 16
+attention_head_size:
+  desc: number of attention heads. Set to up to 4 for large datasets
+  value: 4
+dropout:
+  desc: Dropout Rate for Training. Recommended between .1 and .3
+  value: 0.25
+hidden_continuous_size:
+  desc: set to <= hidden_size
+  value: 4
+reduce_on_plateau_patience:
+  desc: reduce learning rate if no improvement in validation loss after x epochs
+  value: 8
+output_size:
+  desc: 7 quantiles by default
+  value: 7
+transformation:
+  desc: Transform for Group Fitter
+  value: "softplus"
+impute_strategy:
+  desc: Impute strategy for missing values. Only used if imputation is used
+  value: "median"
+n_neighbors:
+  desc: Only used in value imputation
+  value: 8
+weights:
+  desc: Only used in value imputation
+  value: "distance"
+target:
+  desc: Variable(s) to be Predicted
+  value: "newCases_trend"
+time_varying_unknown_reals:
+  desc:
+  value: ['newCases','log_newCases','newCases_trend','newCases_cycle']
+time_varying_known_reals:
+  desc: in reality unknown but could be used for conditional forecasts
+  value: ['time_idx']
