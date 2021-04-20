@@ -9,22 +9,22 @@ max_epochs:
   value: 50
 gradient_clip_val:
   desc: Gradient Clip Value provided to pytorch trainer
-  value: 0.03
+  value: 0.09189168153859212
 learning_rate:
   desc: Learning Rate used for training
-  value: 0.03
+  value: 0.03266606107112135
 hidden_size:
   desc: Number of hidden layers in network
-  value: 16
+  value: 9
 attention_head_size:
   desc: number of attention heads. Set to up to 4 for large datasets
-  value: 1
+  value: 3
 dropout:
   desc: Dropout Rate for Training. Recommended between .1 and .3
-  value: 0.25
+  value: 0.24589504724124006
 hidden_continuous_size:
   desc: set to <= hidden_size
-  value: 4
+  value: 8
 reduce_on_plateau_patience:
   desc: reduce learning rate if no improvement in validation loss after x epochs
   value: 4
