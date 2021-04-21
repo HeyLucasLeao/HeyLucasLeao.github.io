@@ -1,12 +1,12 @@
 max_prediction_length:
   desc: Maximum Number of Periods Predicted
-  value: 7
+  value: 14
 max_encoder_length:
   desc: Maximum Number Periods used as Input
   value: 180
 max_epochs:
   desc: Maximum Number of Epochs for fitting
-  value: 50
+  value: 100
 gradient_clip_val:
   desc: Gradient Clip Value provided to pytorch trainer
   value: 0.09189168153859212
@@ -30,7 +30,7 @@ reduce_on_plateau_patience:
   value: 4
 output_size:
   desc: 7 quantiles by default
-  value: 7
+  value: 14
 transformation:
   desc: Transform for Group Fitter
   value: "softplus"
@@ -48,7 +48,7 @@ target:
   value: "newCases_trend"
 time_varying_unknown_reals:
   desc:
-  value: ['newCases','log_newCases','newCases_trend','newCases_cycle']
+  value: ['newCases', 'log_newCases','newCases_trend','newCases_cycle']
 time_varying_known_reals:
   desc: in reality unknown but could be used for conditional forecasts
   value: ['time_idx']
