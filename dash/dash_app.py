@@ -24,6 +24,7 @@ from os import listdir
 import csv
 from plotly.subplots import make_subplots
 from functions_to_date import dias, epocas_festivas, meses_anos, traduzir_eixo_x, dias_traduzidos
+from os import environ
 
 from sktime.performance_metrics.forecasting import smape_loss
 from lightgbm import LGBMRegressor
@@ -33,9 +34,9 @@ from sktime.forecasting.compose import make_reduction
 
 
 from dash import Dash
-from dash_html_components import Div
+import dash_html_components as html
 import dash_core_components as dcc
-import dash_table
+import dash_bootstrap_components as dbc
 
 
 import warnings
@@ -44,6 +45,7 @@ warnings.filterwarnings("ignore")
 PATH_PDF = r'../raspagem_dos_boletins_diarios/relatorios'
 PATH_CSV = r'../raspagem_dos_boletins_diarios/raw_csvs'
 GLOBAL_TEMPLATE = 'seaborn'
+MAPBOX_TOKEN = environ.get('MAPBOX_TOKEN')
 
 #url = 'https://github.com/wcota/covid19br/blob/master/cases-brazil-cities-time.csv.gz?raw=true'
 #r = requests.get(url, allow_redirects=True)
@@ -290,6 +292,7 @@ def show_figure2():
                                labels={"totalCases": "N.º de Casos", "city": "Cidade", "deaths": "N.º de Óbitos", "newCases": "Novos Casos", "newDeaths": "Novos Óbitos"})
 
     fig.update_layout(width=800, height=800, separators=",.", template=GLOBAL_TEMPLATE)
+    fig.update_layout(mapbox_style="dark", mapbox_accesstoken=MAPBOX_TOKEN)
     fig.update_coloraxes(showscale=False)
     return fig
 
@@ -323,7 +326,7 @@ def show_figure3():
                                        "newDeaths": "Novos Óbitos"})
 
     fig.update_coloraxes(showscale=False)
-
+    fig.update_layout(mapbox_style="dark", mapbox_accesstoken=MAPBOX_TOKEN)
     fig.update_layout(width=800, height=800, separators=",.", template=GLOBAL_TEMPLATE)
     
     return fig
@@ -575,12 +578,6 @@ def show_figure8():
                      ticktext=ticktext)
     fig.update_yaxes(matches=None)
     return fig
-
-#print(f"Média de Validação Cruzada de Erro Percentual Absoluto Médio Simétrico : {smape} %")
-
-
-# In[84]:
-
 
 def show_figure9():
     
@@ -956,39 +953,53 @@ def show_figure11():
 #data = data.strftime("%y/%m/%d")
 #f"Data de Relatório de Ocupação: {data}"
 
-external_stylesheets = [
-    'https://codepen.io/chriddyp/pen/bWLwgP.css'
-]
+app = Dash(__name__, external_stylesheets = dbc.themes.BOOTSTRAP)
 
-app = Dash(__name__, external_stylesheets = external_stylesheets)
+# styling the sidebar
+SIDEBAR_STYLE = {
+    "position": "fixed",
+    "top": 0,
+    "left": 0,
+    "bottom": 0,
+    "width": "16rem",
+    "padding": "2rem 1rem",
+    "background-color": "#f8f9fa",
+}
 
-tabs_style = {
-    'height': '100px',
-    'align-items': 'center'
+# padding for the page content
+CONTENT_STYLE = {
+    "margin-left": "18rem",
+    "margin-right": "2rem",
+    "padding": "2rem 1rem",
 }
 
 tab_style = {
-    'borderBottom': '1px solid #d6d6d6',
+    'borderBottom': '1px solid #ffffff',
     'padding': '6px',
     'border-radius': '15px',
-    'font-color': '#111111',
-    'background-color': '#ececec',
+    'font-color': '#222225',
+    'background-color': '#ffffff',
  
 }
  
 tab_selected_style = {
-    'borderTop': '1px solid #d6d6d6',
-    'borderBottom': '1px solid #d6d6d6',
-    'backgroundColor': '#3f3f44',
-    'font-color': '#ececec',
+    'borderTop': '1px solid #ffffff',
+    'borderBottom': '1px solid #ffffff',
+    'backgroundColor': '#ffffff',
+    'font-color': '#ffffff',
     'padding': '6px',
     'border-radius': '15px',
     'align-items': 'center'
 }
 pred, smape = show_figure11()
 
-app.layout = Div([
+app.layout = html.Div([
     dcc.Tabs([
+        html.H2("Sidebar", className="display-4"),
+        html.Hr(),
+        html.P(
+            "Number of students per education level", className="lead"
+        ),
         dcc.Tab(label='Gráfico de Dispersão', children=[dcc.Graph(figure=show_figure1())], style = tab_style, selected_style = tab_selected_style),
         dcc.Tab(label='Casos & Óbitos por Estado & Munícipio', children=[dcc.Graph(figure=show_figure2()), dcc.Graph(figure=show_figure3())], style = tab_style, selected_style = tab_selected_style),
         dcc.Tab(label="Frequência Mensal no Amazonas", children=[dcc.Graph(figure=show_figure4())], style = tab_style, selected_style = tab_selected_style),
@@ -996,11 +1007,10 @@ app.layout = Div([
         dcc.Tab(label="N.º Diário de Casos & Óbitos no Amazonas", children=[dcc.Graph(figure=show_figure6()), dcc.Graph(figure=show_figure7())], style = tab_style, selected_style = tab_selected_style),
         dcc.Tab(label='Crescimento dos Últimos 07 dias', children=[dcc.Graph(figure=show_figure8())], style = tab_style, selected_style = tab_selected_style),
         dcc.Tab(label='Média de Registros por Dia da Semana', children=[dcc.Graph(figure=show_figure9())], style = tab_style, selected_style = tab_selected_style),
-        dcc.Tab(label='Média de Registros por Dia da Semana', children=[dcc.Graph(figure=show_figure9())], style = tab_style, selected_style = tab_selected_style),
         dcc.Tab(label='Taxa de Ocupação de Hospital na Capital', children=[dcc.Graph(figure=show_figure10())], style = tab_style, selected_style = tab_selected_style),
         dcc.Tab(label='Predição de Tendência', children=[dcc.Graph(figure=pred)], style = tab_style, selected_style = tab_selected_style)
-        ], style=tabs_style),
-    ])
+            ], style=SIDEBAR_STYLE, vertical=True)
+                ])
 
 if __name__ == '__main__':
     app.run_server(debug=True)
