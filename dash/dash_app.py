@@ -43,6 +43,7 @@ warnings.filterwarnings("ignore")
 
 PATH_PDF = r'../raspagem_dos_boletins_diarios/relatorios'
 PATH_CSV = r'../raspagem_dos_boletins_diarios/raw_csvs'
+GLOBAL_TEMPLATE = 'seaborn'
 
 #url = 'https://github.com/wcota/covid19br/blob/master/cases-brazil-cities-time.csv.gz?raw=true'
 #r = requests.get(url, allow_redirects=True)
@@ -165,7 +166,7 @@ def show_figure1():
 
     ###Global
 
-    fig.update_layout(height = 800, width = 1600, separators=",.", font=dict(size=12), template='seaborn')
+    fig.update_layout(height = 800, width = 1600, separators=",.", font=dict(size=12), template=GLOBAL_TEMPLATE)
     
     return fig
 
@@ -288,7 +289,7 @@ def show_figure2():
                                opacity = 0.95,
                                labels={"totalCases": "N.º de Casos", "city": "Cidade", "deaths": "N.º de Óbitos", "newCases": "Novos Casos", "newDeaths": "Novos Óbitos"})
 
-    fig.update_layout(width=800, height=800, separators=",.", template='seaborn')
+    fig.update_layout(width=800, height=800, separators=",.", template=GLOBAL_TEMPLATE)
     fig.update_coloraxes(showscale=False)
     return fig
 
@@ -323,7 +324,7 @@ def show_figure3():
 
     fig.update_coloraxes(showscale=False)
 
-    fig.update_layout(width=800, height=800, separators=",.", template='seaborn')
+    fig.update_layout(width=800, height=800, separators=",.", template=GLOBAL_TEMPLATE)
     
     return fig
 
@@ -379,7 +380,7 @@ def show_figure4():
 
                     hovermode='x',
                      showlegend=False,
-                     template='seaborn')
+                     template=GLOBAL_TEMPLATE)
     
     fig.update_xaxes(title_text='Data', 
                      tickformat= '%y/%m/%d',           
@@ -426,7 +427,7 @@ def show_figure5():
                         width = 1600, 
                         separators=",.", 
                         hovermode='x',
-                        template='seaborn')
+                        template=GLOBAL_TEMPLATE)
 
     fig.update_traces(marker=dict(color='#597386'), showlegend=False)
 
@@ -480,7 +481,7 @@ def show_figure6():
                                  tickvals=dias(), 
                                  ticktext=meses_anos('2020-04-01')))
 
-    fig.update_layout(hovermode='x')
+    fig.update_layout(hovermode='x', template=GLOBAL_TEMPLATE)
     
     return fig
 
@@ -508,7 +509,8 @@ def show_figure7():
                              showlegend=False,
                             name='Feriado'))
 
-    fig.update_layout(height= 800, 
+    fig.update_layout(template=GLOBAL_TEMPLATE,
+                        height= 800, 
                       width = 1600, 
                       hovermode='x',
                       separators=",.", 
@@ -556,7 +558,8 @@ def show_figure8():
 
     fig.update_traces(hovertemplate="%{y} %")
     fig.update_layout(hovermode='x', 
-                      separators=",.")
+                      separators=",.",
+                      template=GLOBAL_TEMPLATE)
 
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[1]))
 
@@ -573,88 +576,6 @@ def show_figure8():
     fig.update_yaxes(matches=None)
     return fig
 
-
-def show_figure():
-
-    fh = np.arange(1, 14 + 1)
-    y = pd.Series(data=trend_newCases.values, index=total_de_casos_amazonas.date)
-    y.index.freq = 'D'
-
-
-    # In[77]:
-
-
-    model = LGBMRegressor(random_state=4,
-        learning_rate = 0.04591301953670739, 
-        num_leaves = 45, 
-        min_child_samples = 1, 
-        subsample = 0.05,
-        colsample_bytree = 0.9828905761860228,
-        subsample_freq=1,
-        n_estimators=685)
-    reg = make_reduction(estimator=model, window_length=14)
-    cv = ExpandingWindowSplitter(initial_window=60)
-    cross_val = evaluate(forecaster=reg, y=y, cv=cv, strategy="refit", return_data=True)
-    reg.fit(y)
-    y_pred = reg.predict(fh).round()
-
-    fig = go.Figure()
-    
-    
-    fig.add_trace(go.Bar(
-                 x=total_de_casos_amazonas['date'].tail(30), 
-                 y=total_de_casos_amazonas['newCases'].tail(30),
-                hoverinfo='skip'))
-
-    fig.update_traces(marker_color='gray')
-
-    fig.add_trace(go.Scatter(x=total_de_casos_amazonas['date'].tail(30),
-                             y=trend_newCases.round().tail(30), 
-                             line=dict(color='darkred', width=1), 
-                             name="Holt-Winters (SEHW) - Casos",
-                             mode='lines', 
-                             hoverinfo="y", 
-                             showlegend=False, 
-                             hovertemplate="%{y}",
-                             fillcolor='Gray'))
-
-    fig.add_trace(go.Scatter(x=y_pred.index, 
-                             y=y_pred.values, 
-                             line=dict(color='#650000', width=1), 
-                             name=f"Predição por LightGBM",
-                             mode='lines+markers',
-                             hoverinfo='y' , 
-                             showlegend=False, 
-                             hovertemplate="%{y}",
-                             opacity= 0.75))
-
-    fig.update_layout(showlegend=False,
-                    hovermode='x',
-                      height= 400, 
-                      width = 800, 
-                      separators=",.", 
-                        font=dict(size=11),
-                     title='Predição de Tendência de Casos')
-    
-    tickvals, ticktext = traduzir_eixo_x(total_de_casos_amazonas['date'].tail(30), 6, 7)
-    tickvals_pred, ticktext_pred = traduzir_eixo_x(y_pred.index, 4, 7)
-    
-    tickvals.extend(tickvals_pred)
-    ticktext.extend(ticktext_pred)
-    
-    ticktext = [x[:-4] for x in ticktext]
-    
-    fig.update_xaxes(tickformat= '%y/%m/%d', 
-                     tickvals=tickvals, 
-                     ticktext=ticktext)
-    
-    smape = (cross_val['test_sMAPE'].mean() * 100).round(2)
-    smape = str(smape)
-    smape = smape.replace('.', ',')
-
-    return fig, smape
-
-
 #print(f"Média de Validação Cruzada de Erro Percentual Absoluto Médio Simétrico : {smape} %")
 
 
@@ -662,14 +583,6 @@ def show_figure():
 
 
 def show_figure9():
-    
-    dici = {'Monday': 'Segunda',
-    'Tuesday': 'Terça',
-    'Wednesday': 'Quarta',
-    'Thursday': 'Quinta',
-    'Friday': 'Sexta',
-    'Saturday': 'Sábado',
-    'Sunday': 'Domingo'}
     
     media_casos_por_dia_da_semana = total_de_casos_amazonas.groupby('dia_da_semana')[['newCases', 'newDeaths', 'crescimento_novos_casos']].mean().round().reindex(['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'])
     media_casos_por_dia_da_semana['newDeaths'] = [round(x) for x in media_casos_por_dia_da_semana['newDeaths']]
@@ -686,7 +599,7 @@ def show_figure9():
                  color=media_casos_por_dia_da_semana.index, 
                  width= 400)
 
-    fig.update_layout(
+    fig.update_layout(template=GLOBAL_TEMPLATE,
                       width = 470, 
                       height=600,
                       separators=",.", 
@@ -696,52 +609,6 @@ def show_figure9():
 
     fig.update_traces(hovertemplate="%{y}")
     
-    return fig
-
-
-def show_figure10():
-    
-    fig = px.bar(data_frame=total_de_casos_amazonas.tail(7), 
-                 x='date', 
-                 y='newCases', 
-                 hover_data={"newCases": ":,2f", 'newDeaths': ':,2f','date': False}, 
-                 labels={"newCases": "Novos Casos", "date": 'Data', 'newDeaths': 'Novos Óbitos'},
-                 color = 'newCases', 
-                 opacity= 0.75)
-
-    fig.add_trace(go.Scatter(x=total_de_casos_amazonas.tail(7)['date'],
-                             y=trend_newCases.tail(7).round(), 
-                             line=dict(color='darkred', width=1), 
-                             name="Holt-Winters (SEHW) - Casos", 
-                             mode='lines', 
-                             hoverinfo="y", 
-                             showlegend=False, 
-                             hovertemplate="%{y}"))
-
-
-    fig.add_trace(go.Scatter(x=total_de_casos_amazonas.tail(7)['date'],
-                             y=trend_newDeaths.tail(7).round(), 
-                             line=dict(color='darkred', width=1), 
-                             name="Holt-Winters (SEHW) - Óbitos", 
-                             mode='lines', 
-                             hoverinfo="y", 
-                             showlegend=False, 
-                             hovertemplate="%{y}"))
-
-
-    fig.update_layout(title = 'Registros dos Últimos 07 Dias',
-                      height= 600, 
-                      width = 470, 
-                      separators=",.")
-
-    fig.update_layout(hovermode='x')
-    
-    tickvals, ticktext = traduzir_eixo_x(total_de_casos_amazonas.tail(7)['date'], 0, 2)
-    ticktext = [x[:-4] for x in ticktext]
-    
-    fig.update_xaxes(tickformat= '%y/%m/%d', 
-                     tickvals=tickvals, 
-                     ticktext=ticktext)
     return fig
 
 
@@ -897,7 +764,7 @@ def show_table(df):
     return df
 
 
-def show_figure():
+def show_figure10():
     
     df_uti_geral = pd.read_csv(r'../raspagem_dos_boletins_diarios/normalized_csvs/uti_geral.csv')
     df_uti_geral.rename(columns = {'Rede Publica': 'Rede Pública',
@@ -968,13 +835,12 @@ def show_figure():
                     'Rede Publica': 'Rede Pública',
                     'Oncologico': 'Oncológico',
                     'Cardiaco': 'Cardíaco',
-                    'variable': 'Setor'},
-             title='Taxa de Ocupação de Hospitais em Manaus 2021 (Por Unidade)')
+                    'variable': 'Setor'})
 
 
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[1], textangle=45))
 
-    fig.update_layout(hovermode='x')
+    fig.update_layout(hovermode='x', template=GLOBAL_TEMPLATE)
 
     fig.update_traces(hovertemplate="%{y} %")
 
@@ -991,6 +857,83 @@ def show_figure():
                     tickangle=35)
     return fig
 
+def show_figure11():
+
+    fh = np.arange(1, 14 + 1)
+    y = pd.Series(data=trend_newCases.values, index=total_de_casos_amazonas.date)
+    y.index.freq = 'D'
+
+    model = LGBMRegressor(random_state=4,
+        learning_rate = 0.04591301953670739, 
+        num_leaves = 45, 
+        min_child_samples = 1, 
+        subsample = 0.05,
+        colsample_bytree = 0.9828905761860228,
+        subsample_freq=1,
+        n_estimators=685)
+    reg = make_reduction(estimator=model, window_length=14)
+    cv = ExpandingWindowSplitter(initial_window=60)
+    cross_val = evaluate(forecaster=reg, y=y, cv=cv, strategy="refit", return_data=True)
+    reg.fit(y)
+    y_pred = reg.predict(fh).round()
+
+    fig = go.Figure()
+    
+    
+    fig.add_trace(go.Bar(
+                 x=total_de_casos_amazonas['date'].tail(30), 
+                 y=total_de_casos_amazonas['newCases'].tail(30),
+                hoverinfo='skip'))
+
+    fig.update_traces(marker_color='gray')
+
+    fig.add_trace(go.Scatter(x=total_de_casos_amazonas['date'].tail(30),
+                             y=trend_newCases.round().tail(30), 
+                             line=dict(color='darkred', width=1), 
+                             name="Holt-Winters (SEHW) - Casos",
+                             mode='lines', 
+                             hoverinfo="y", 
+                             showlegend=False, 
+                             hovertemplate="%{y}",
+                             fillcolor='Gray'))
+
+    fig.add_trace(go.Scatter(x=y_pred.index, 
+                             y=y_pred.values, 
+                             line=dict(color='#650000', width=1), 
+                             name=f"Predição por LightGBM",
+                             mode='lines+markers',
+                             hoverinfo='y' , 
+                             showlegend=False, 
+                             hovertemplate="%{y}",
+                             opacity= 0.75))
+
+    fig.update_layout(template=GLOBAL_TEMPLATE,
+                    showlegend=False,
+                    hovermode='x',
+                      height= 400, 
+                      width = 800, 
+                      separators=",.", 
+                        font=dict(size=11),
+                     title='Predição de Tendência de Casos')
+    
+    tickvals, ticktext = traduzir_eixo_x(total_de_casos_amazonas['date'].tail(30), 6, 7)
+    tickvals_pred, ticktext_pred = traduzir_eixo_x(y_pred.index, 4, 7)
+    
+    tickvals.extend(tickvals_pred)
+    ticktext.extend(ticktext_pred)
+    
+    ticktext = [x[:-4] for x in ticktext]
+    
+    fig.update_xaxes(tickformat= '%y/%m/%d', 
+                     tickvals=tickvals, 
+                     ticktext=ticktext)
+    
+    smape = (cross_val['test_sMAPE'].mean() * 100).round(2)
+    smape = str(smape)
+    smape = smape.replace('.', ',')
+
+    return fig, smape
+
 
 # ###### Fonte do repositório deste projeto: https://github.com/HeyLucasLeao/HeyLucasLeao.github.io
 
@@ -1002,16 +945,16 @@ def show_figure():
 # ###### Colorações relativas a: (1). N.º de Óbitos; (2). Intensidade;
 #print(f"Data de Criação do Relatório: {datetime.now()}")
 
-taxa_de_ocupacao, link, data = get_table()
-taxa_de_ocupacao = norm_table(taxa_de_ocupacao)
-atualizar_csvs(taxa_de_ocupacao, link, data)
-taxa_de_ocupacao = show_table(taxa_de_ocupacao)
-taxa_de_ocupacao['id'] = taxa_de_ocupacao['Unidade']
-
-data = data.replace("_", "/")[:8]
-data = pd.to_datetime(data, format="%d/%m/%y")
-data = data.strftime("%y/%m/%d")
-f"Data de Relatório de Ocupação: {data}"
+#taxa_de_ocupacao, link, data = get_table()
+#taxa_de_ocupacao = norm_table(taxa_de_ocupacao)
+#atualizar_csvs(taxa_de_ocupacao, link, data)
+#taxa_de_ocupacao = show_table(taxa_de_ocupacao)
+#taxa_de_ocupacao['id'] = taxa_de_ocupacao['Unidade']
+#
+#data = data.replace("_", "/")[:8]
+#data = pd.to_datetime(data, format="%d/%m/%y")
+#data = data.strftime("%y/%m/%d")
+#f"Data de Relatório de Ocupação: {data}"
 
 external_stylesheets = [
     'https://codepen.io/chriddyp/pen/bWLwgP.css'
@@ -1019,19 +962,44 @@ external_stylesheets = [
 
 app = Dash(__name__, external_stylesheets = external_stylesheets)
 
+tabs_style = {
+    'height': '100px',
+    'align-items': 'center'
+}
+
+tab_style = {
+    'borderBottom': '1px solid #d6d6d6',
+    'padding': '6px',
+    'border-radius': '15px',
+    'font-color': '#111111',
+    'background-color': '#ececec',
+ 
+}
+ 
+tab_selected_style = {
+    'borderTop': '1px solid #d6d6d6',
+    'borderBottom': '1px solid #d6d6d6',
+    'backgroundColor': '#3f3f44',
+    'font-color': '#ececec',
+    'padding': '6px',
+    'border-radius': '15px',
+    'align-items': 'center'
+}
+pred, smape = show_figure11()
 
 app.layout = Div([
     dcc.Tabs([
-        dcc.Tab(label='Gráfico de Dispersão', children=[dcc.Graph(figure=show_figure1())]),
-        dcc.Tab(label='Casos & Óbitos por Estado', children=[dcc.Graph(figure=show_figure2())]),
-        dcc.Tab(label="Casos & Óbitos por Município", children=[dcc.Graph(figure=show_figure3())]),
-        dcc.Tab(label="Frequência Mensal no Amazonas", children=[dcc.Graph(figure=show_figure4())]),
-        dcc.Tab(label="Quadro Evolutivo de Casos", children=[dcc.Graph(figure=show_figure5())]),
-        dcc.Tab(label="Registro Diário de Casos & Óbitos no Amazonas", children=[dcc.Graph(figure=show_figure6())]),
-        dcc.Tab(label="Registro Diário de Óbitos no Amazonas", children=[dcc.Graph(figure=show_figure7())]),
-        dcc.Tab(label='Crescimento dos Últimos 07 dias', children=[dcc.Graph(figure=show_figure8())]),
-        dcc.Tab(label='Média de Registros por Dia da Semana', children=[dcc.Graph(figure=show_figure9())]),
-        ]),
+        dcc.Tab(label='Gráfico de Dispersão', children=[dcc.Graph(figure=show_figure1())], style = tab_style, selected_style = tab_selected_style),
+        dcc.Tab(label='Casos & Óbitos por Estado & Munícipio', children=[dcc.Graph(figure=show_figure2()), dcc.Graph(figure=show_figure3())], style = tab_style, selected_style = tab_selected_style),
+        dcc.Tab(label="Frequência Mensal no Amazonas", children=[dcc.Graph(figure=show_figure4())], style = tab_style, selected_style = tab_selected_style),
+        dcc.Tab(label="Quadro Evolutivo de Casos", children=[dcc.Graph(figure=show_figure5())], style = tab_style, selected_style = tab_selected_style),
+        dcc.Tab(label="N.º Diário de Casos & Óbitos no Amazonas", children=[dcc.Graph(figure=show_figure6()), dcc.Graph(figure=show_figure7())], style = tab_style, selected_style = tab_selected_style),
+        dcc.Tab(label='Crescimento dos Últimos 07 dias', children=[dcc.Graph(figure=show_figure8())], style = tab_style, selected_style = tab_selected_style),
+        dcc.Tab(label='Média de Registros por Dia da Semana', children=[dcc.Graph(figure=show_figure9())], style = tab_style, selected_style = tab_selected_style),
+        dcc.Tab(label='Média de Registros por Dia da Semana', children=[dcc.Graph(figure=show_figure9())], style = tab_style, selected_style = tab_selected_style),
+        dcc.Tab(label='Taxa de Ocupação de Hospital na Capital', children=[dcc.Graph(figure=show_figure10())], style = tab_style, selected_style = tab_selected_style),
+        dcc.Tab(label='Predição de Tendência', children=[dcc.Graph(figure=pred)], style = tab_style, selected_style = tab_selected_style)
+        ], style=tabs_style),
     ])
 
 if __name__ == '__main__':
