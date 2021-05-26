@@ -4,7 +4,6 @@ import datetime as dt
 from os import system
 from time import sleep
 from subprocess import Popen
-from datetime import timedelta
 
 x = 0
 
@@ -16,7 +15,7 @@ while True:
     try:
         url = 'https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-cities.csv'
         df = pd.read_csv(url)
-        data = str(dt.datetime.now() - timedelta(1))[:10] 
+        data = str(dt.datetime.now())[:10] 
         df_estado = pd.read_csv(
             'https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv')
         df_estado_soma_casos = df_estado.query(
