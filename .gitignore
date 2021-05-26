@@ -1,5 +1,7 @@
 .ipynb_checkpoints
 *.gz
-lightning_logs
 __pycache__
 debug.log
+*.pyc
+.DS_Store
+.env

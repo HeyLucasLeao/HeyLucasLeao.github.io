@@ -1,6 +1,7 @@
 from git import Repo
 from os import environ
 from time import sleep
+from subprocess import Popen
 
 """inicia um push direto ao repo."""
 
@@ -22,7 +23,14 @@ def git_push():
     except:
         print('Erro durante tentativa de push.')
 
+def heroku():
+    print('Atualizando heroku...')
+    Popen.wait(Popen('git push heroku master',
+                     cwd=PATH, shell=True), 
+                     timeout=360)
 
 git_push()
 print('Push feito com sucesso.')
+heroku()
+print('Atualização feita com sucesso.')
 sleep(15)
