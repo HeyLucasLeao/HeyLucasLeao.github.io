@@ -2,3 +2,4 @@
 *.gz
 lightning_logs
 __pycache__
+debug.log
