@@ -45,14 +45,12 @@ warnings.filterwarnings("ignore")
 
 PATH_PDF = r'../raspagem_dos_boletins_diarios/relatorios'
 PATH_CSV = r'../raspagem_dos_boletins_diarios/raw_csvs'
-GLOBAL_TEMPLATE = 'seaborn'
+GLOBAL_TEMPLATE = 'plotly_dark'
 MAPBOX_TOKEN = environ.get('MAPBOX_TOKEN')
+rgb = 'rgb(34, 34, 34)'
 
-#url = 'https://github.com/wcota/covid19br/blob/master/cases-brazil-cities-time.csv.gz?raw=true'
-#r = requests.get(url, allow_redirects=True)
-#open('data.csv.gz','wb').write(r.content)
-gz = gzip.open('data.csv.gz')
-df = pd.read_csv(gz)
+url = 'https://github.com/wcota/covid19br/blob/master/cases-brazil-cities-time.csv.gz?raw=true'
+df = pd.read_csv(url, compression='gzip')
 df['date'] = pd.to_datetime(df['date'])
 
 
@@ -216,7 +214,7 @@ def show_figure1():
 
     ###Global
 
-    fig.update_layout(height = 800, width = 1600, separators=",.", font=dict(size=12), template=GLOBAL_TEMPLATE)
+    fig.update_layout(height = 800, width = 1600, separators=",.", font=dict(size=12), template=GLOBAL_TEMPLATE, paper_bgcolor=rgb, plot_bgcolor=rgb)
     
     return fig
 
@@ -307,19 +305,7 @@ def tables():
 
         df_am_tabela.index = np.arange(1, len(df_am_tabela) + 1)
 
-        total_de_casos_amazonas_tabela = total_de_casos_amazonas.copy()
-        total_de_casos_amazonas_tabela['newCases'] = ["{:,}".format(x) for x in total_de_casos_amazonas_tabela['newCases']]
-        total_de_casos_amazonas_tabela['newCases'] = [x.replace(',','.') for x in total_de_casos_amazonas_tabela['newCases']]
-        total_de_casos_amazonas_tabela['newDeaths'] = ["{:,}".format(x) for x in total_de_casos_amazonas_tabela['newDeaths']]
-        total_de_casos_amazonas_tabela['newDeaths'] = [x.replace(',','.') for x in total_de_casos_amazonas_tabela['newDeaths']]
-
-        total_de_casos_amazonas_tabela = total_de_casos_amazonas_tabela[['date',
-                                'newCases',
-                                'newDeaths']].tail(10).rename(columns={'newCases': 'Novos Casos', 
-                                                                       "newDeaths": "Novos Óbitos", 
-                                                                       'date': 'Data'}).tail(10).sort_values('Data', ascending=False).set_index('Data')
-
-        return total_por_estado_tabela, df_am_tabela,  total_de_casos_amazonas_tabela
+        return total_por_estado_tabela, df_am_tabela
 
 def show_figure2():
     fig = px.choropleth_mapbox(data_frame=total_casos_e_mortes_por_estado, 
@@ -335,7 +321,7 @@ def show_figure2():
                                opacity = 0.95,
                                labels={"totalCases": "N.º de Casos", "city": "Cidade", "deaths": "N.º de Óbitos", "newCases": "Novos Casos", "newDeaths": "Novos Óbitos"})
 
-    fig.update_layout(width=800, height=800, separators=",.", template=GLOBAL_TEMPLATE)
+    fig.update_layout(width=800, height=800, separators=",.", template=GLOBAL_TEMPLATE, paper_bgcolor=rgb, plot_bgcolor=rgb)
     fig.update_layout(mapbox_style="dark", mapbox_accesstoken=MAPBOX_TOKEN)
     fig.update_coloraxes(showscale=False)
     return fig
@@ -365,7 +351,7 @@ def show_figure3():
 
     fig.update_coloraxes(showscale=False)
     fig.update_layout(mapbox_style="dark", mapbox_accesstoken=MAPBOX_TOKEN)
-    fig.update_layout(width=800, height=800, separators=",.", template=GLOBAL_TEMPLATE)
+    fig.update_layout(width=800, height=800, separators=",.", template=GLOBAL_TEMPLATE, paper_bgcolor=rgb, plot_bgcolor=rgb)
     
     return fig
 
@@ -417,7 +403,9 @@ def show_figure4():
 
                     hovermode='x',
                      showlegend=False,
-                     template=GLOBAL_TEMPLATE)
+                     template=GLOBAL_TEMPLATE,
+                     paper_bgcolor=rgb,
+                    plot_bgcolor=rgb)
     
     fig.update_xaxes(title_text='Data', 
                      tickformat= '%y/%m/%d',           
@@ -462,7 +450,9 @@ def show_figure5():
                         width = 1600, 
                         separators=",.", 
                         hovermode='x',
-                        template=GLOBAL_TEMPLATE)
+                        template=GLOBAL_TEMPLATE,
+                        paper_bgcolor=rgb,
+                        plot_bgcolor=rgb)
 
     fig.update_traces(marker=dict(color='#597386'), showlegend=False)
 
@@ -512,6 +502,8 @@ def show_figure6():
     fig.update_layout(height= 800, 
                       width = 1600, 
                       separators=",.", 
+                      paper_bgcolor=rgb,
+                        plot_bgcolor=rgb,
                       xaxis=dict(tickformat= '%y/%m/%d', 
                                  tickvals=dias(), 
                                  ticktext=meses_anos('2020-04-01')))
@@ -551,7 +543,9 @@ def show_figure7():
                       separators=",.", 
                       xaxis=dict(tickformat= '%y/%m/%d', 
                                  tickvals=dias(), 
-                                 ticktext=meses_anos('2020-04-01')))
+                                 ticktext=meses_anos('2020-04-01')),
+                                paper_bgcolor=rgb,
+                                plot_bgcolor=rgb)
     return fig
 
 
@@ -570,7 +564,9 @@ def show_figure8():
     fig.update_traces(hovertemplate="%{y} %")
     fig.update_layout(hovermode='x', 
                       separators=",.",
-                      template=GLOBAL_TEMPLATE)
+                      template=GLOBAL_TEMPLATE,
+                      paper_bgcolor=rgb,
+                     plot_bgcolor=rgb)
 
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[1]))
 
@@ -600,164 +596,13 @@ def show_figure9():
                       separators=",.", 
                       xaxis={'tickangle': 35}, 
                       font=dict(size=11),
-                     hovermode='x')
+                     hovermode='x',
+                     paper_bgcolor=rgb,
+                     plot_bgcolor=rgb)
 
     fig.update_traces(hovertemplate="%{y}")
     
     return fig
-
-
-def get_table():
-    AREA = [265.022,
-    413.384,
-    373.253,
-    829.774]
-    data = str(datetime.now())[2:10]
-    data = data.split('-')
-    data.reverse()
-    data = [x + "_" for x in data]
-    data = "".join(data)
-    data_url_acento = data
-    data_url_sem_acento = data
-    
-    while True:
-        try:
-            link = f'https://www.fvs.am.gov.br/media/publicacao/{data_url_acento}BOLETIM_DI%C3%81RIO_DE_CASOS_COVID-19.pdf'
-            response = requests.get(link)
-            response.raise_for_status()
-            break
-        except requests.HTTPError:
-            data_url_acento = pd.to_datetime(data_url_acento, format="%d_%m_%y_")
-            data_url_acento = data_url_acento - timedelta(1)
-            data_url_acento = str(data_url_acento)[2:10]
-            data_url_acento = data_url_acento.split('-')
-            data_url_acento.reverse()
-            data_url_acento = [x + "_" for x in data_url_acento]
-            data_url_acento = "".join(data_url_acento)
-            continue
-    while True:
-        try:
-            link = f'https://www.fvs.am.gov.br/media/publicacao/{data_url_sem_acento}BOLETIM_DIARIO_DE_CASOS_COVID-19.pdf'
-            response = requests.get(link)
-            response.raise_for_status()
-            break
-        except requests.HTTPError:
-            data_url_sem_acento = pd.to_datetime(data_url_sem_acento, format="%d_%m_%y_")
-            data_url_sem_acento = data_url_sem_acento - timedelta(1)
-            data_url_sem_acento = str(data_url_sem_acento)[2:10]
-            data_url_sem_acento = data_url_sem_acento.split('-')
-            data_url_sem_acento.reverse()
-            data_url_sem_acento = [x + "_" for x in data_url_sem_acento]
-            data_url_sem_acento = "".join(data_url_sem_acento)
-            continue
-            
-    if pd.to_datetime(data_url_acento, format="%d_%m_%y_") > pd.to_datetime(data_url_sem_acento, format="%d_%m_%y_"):
-        taxa_de_ocupacao = read_pdf(f'https://www.fvs.am.gov.br/media/publicacao/{data_url_acento}BOLETIM_DI%C3%81RIO_DE_CASOS_COVID-19.pdf', pages=2, area=AREA, stream=True)[0]
-        link = f'https://www.fvs.am.gov.br/media/publicacao/{data_url_acento}BOLETIM_DI%C3%81RIO_DE_CASOS_COVID-19.pdf'
-        data = data_url_acento
-    else:
-        taxa_de_ocupacao = read_pdf(f'https://www.fvs.am.gov.br/media/publicacao/{data_url_sem_acento}BOLETIM_DIARIO_DE_CASOS_COVID-19.pdf', pages=2, area=AREA, stream=True)[0]
-        link = r'http://www.fvs.am.gov.br/media/publicacao/{data_url_sem_acento}BOLETIM_DIARIO_DE_CASOS_COVID-19.pdf'
-        data = data_url_sem_acento
-
-    return taxa_de_ocupacao, link, data
-
-def norm_table(df):
-    df.drop(index=[0, 1, 8],columns=['Unnamed: 5'], inplace=True)
-
-    df.rename(columns={'Unnamed: 0': 'unidade',
-                                    'Unnamed: 1': 'uti_geral',
-                                    'Unnamed: 2': 'uti_covid-19',
-                                    'Unnamed: 3': 'leitos_clinicos_geral',
-                                    'TAXA DE OCUPAÇÃO EM MANAUS': 'leitos_clinicos_covid-19',
-                                    'Unnamed: 4': 'sala_vermelha_geral',
-                                    'Unnamed: 6': 'sala_vermelha_covid-19'}, inplace=True)
-
-    #taxa_de_ocupacao['uti_geral'] = [x.split()[-1] for x in taxa_de_ocupacao['unidade']]
-    #taxa_de_ocupacao['unidade'] = [" ".join(x.split()[:-1]) for x in taxa_de_ocupacao['unidade']]
-    df['uti_covid-19'] = df['leitos_clinicos_geral']
-    df['leitos_clinicos_geral'] = [x.split()[:-1][0] for x in df['leitos_clinicos_covid-19']]
-    df['leitos_clinicos_covid-19'] = [x.split()[-1] for x in df['leitos_clinicos_covid-19']]
-    return df
-
-def atualizar_csvs(taxa_de_ocupacao, link, data):
-    
-    data_csv = pd.to_datetime(data, format="%d_%m_%y_")
-    data_csv = str(data_csv)[2:10]
-    
-    def change_rows(x):
-        dici_csv = {'REDE PÚBLICA': 'Rede Publica',
-        'Cardíaco': 'Cardiaco',
-        'REDE PRIVADA': 'Rede Privada',
-        'TOTAL': 'Total'}
-        if x in dici_csv.keys():
-            return dici_csv[x]
-        return x
-    
-    def download_file(url):
-        response = urllib.request.urlopen(url)
-        data_download = pd.to_datetime(data, format="%d_%m_%y_")
-        data_download = str(data_download)[2:10]
-        
-        for files in listdir(PATH_PDF):
-            if data_download in files[files.index('_') + 1:files.index('.')]:
-                return
-            else:
-                continue
-        path = r'C:\Users\heylu\Documents\github\HeyLucasLeao.github.io\raspagem_dos_boletins_diarios\relatorios'
-
-        with open(path + '\\' + f'relatorio_{data_download}.pdf', mode='wb') as file:
-            file.write(response.read())
-            
-    for files in listdir(PATH_PDF):
-            if data_csv in files[files.index('_') + 1:files.index('.')]:
-                return
-            else:
-                continue
-                
-    download_file(link)
-    
-    atualizacao_de_csvs = taxa_de_ocupacao.copy()
-    atualizacao_de_csvs['unidade'] = atualizacao_de_csvs['unidade'].apply(change_rows)
-    atualizacao_de_csvs = atualizacao_de_csvs.T
-
-    atualizacao_de_csvs.insert(loc=0, 
-    column='Data', 
-    value=data_csv)
-
-    
-    for files in listdir(PATH_CSV):
-        with open(PATH_CSV + '\\' + files, 'a+', newline='') as f:
-            writer = csv.writer(f)
-            dados = np.array(atualizacao_de_csvs.loc[[files[:files.index('.')]]]).ravel()
-            writer.writerow(dados)
-            
-    for file_name in listdir(PATH_CSV):
-        df = pd.read_csv(PATH_CSV + "\\" + file_name, index_col='Data')
-        for col in df.columns:
-            for i in range(len(df[col])):
-                if isinstance(df[col].iloc[i], str):
-                    df[col].iloc[i] = df[col].iloc[i][:-1]
-                    df[col].iloc[i] = df[col].iloc[i].replace(',', '.')
-                    df[col].iloc[i] = float(df[col].iloc[i])
-                    df[col].iloc[i] = round(df[col].iloc[i] / 100, 2)
-                    df[col].iloc[i] = "{:.2f}".format(df[col].iloc[i])
-        df.to_csv(r'../raspagem_dos_boletins_diarios/normalized_csvs' + "/"+ file_name)
-
-def show_table(df):
-    df = df.rename(columns={'unidade': 'Unidade',
-                                    'uti_geral': 'UTI Geral', 
-                                    'uti_covid-19': 'UTI Covid-19',
-                                    'Oncologico': 'Oncológico',
-                                    'leitos_clinicos_geral': 'Leitos Clínicos Geral', 
-                                    'leitos_clinicos_covid-19': 'Leitos Clínicos Covid-19', 
-                                    'sala_vermelha_geral': 'Sala Vermelha Geral',
-                                    'sala_vermelha_covid-19': 'Sala Vermelha Covid-19',
-                                    'REDE PRIVADA': 'Rede Privada',
-                                    'TOTAL': 'Total',
-                                    'REDE PÚBLICA': 'Rede Pública'})
-    return df
-
 
 def show_figure10():
     
@@ -835,7 +680,7 @@ def show_figure10():
 
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[1], textangle=45))
 
-    fig.update_layout(hovermode='x', template=GLOBAL_TEMPLATE)
+    fig.update_layout(hovermode='x', template=GLOBAL_TEMPLATE, paper_bgcolor=rgb, plot_bgcolor=rgb)
 
     fig.update_traces(hovertemplate="%{y} %")
 
@@ -907,7 +752,9 @@ def show_figure11():
                       width = 800, 
                       separators=",.", 
                         font=dict(size=11),
-                     title='Predição de Tendência de Casos')
+                     title='Predição de Tendência de Casos',
+                     paper_bgcolor=rgb,
+                     plot_bgcolor=rgb)
     
     tickvals, ticktext = traduzir_eixo_x(total_de_casos_amazonas['date'].tail(30), 6, 7)
     tickvals_pred, ticktext_pred = traduzir_eixo_x(y_pred.index, 4, 7)
@@ -928,29 +775,9 @@ def show_figure11():
     return fig, smape
 
 
-# ###### Fonte do repositório deste projeto: https://github.com/HeyLucasLeao/HeyLucasLeao.github.io
+ranking_nacional, ranking_municipal = tables()
 
-# ###### Fonte do banco de dados: https://github.com/wcota/covid19br
-
-# ###### Fonte da Taxa de Ocupação: Secretaria Estado de Saúde do AMAZONAS - SES/AM.
-# ###### Coloração de gráfico referente a intensidade. Tamanho de bolha referente ao número de casos.
-# ## Ranking Municipal de Óbitos por Percentual de Total de Casos
-# ###### Colorações relativas a: (1). N.º de Óbitos; (2). Intensidade;
-#print(f"Data de Criação do Relatório: {datetime.now()}")
-
-#taxa_de_ocupacao, link, data = get_table()
-#taxa_de_ocupacao = norm_table(taxa_de_ocupacao)
-#atualizar_csvs(taxa_de_ocupacao, link, data)
-#taxa_de_ocupacao = show_table(taxa_de_ocupacao)
-#taxa_de_ocupacao['id'] = taxa_de_ocupacao['Unidade']
-#
-#data = data.replace("_", "/")[:8]
-#data = pd.to_datetime(data, format="%d/%m/%y")
-#data = data.strftime("%y/%m/%d")
-#f"Data de Relatório de Ocupação: {data}"
-total_por_estado_tabela, df_am_tabela,  total_de_casos_amazonas_tabela = tables()
-
-app = Dash(__name__, external_stylesheets = [dbc.themes.BOOTSTRAP])
+app = Dash(__name__, external_stylesheets = [dbc.themes.DARKLY])
 
 # styling the sidebar
 SIDEBAR_STYLE = {
@@ -960,20 +787,19 @@ SIDEBAR_STYLE = {
     "bottom": 0,
     "width": "16rem",
     "padding": "2rem 1rem",
-    "background-color": "#f8f9fa",
 }
 
 # padding for the page content
 CONTENT_STYLE = {
     "margin-left": "18rem",
     "margin-right": "2rem",
-    "padding": "2rem 1rem",
+    "padding": "2rem 1rem"
 }
 
 pred, smape = show_figure11()
 
 sidebar = html.Div([
-        html.H2("Relatório Covid-19", className="display-4"),
+        html.H2("Relatório Amazonas", className="display-4"),
         html.Hr(),
         html.P(
             "Tópicos", className="lead"
@@ -1014,8 +840,17 @@ app.layout = html.Div([
 def render_page_content(pathname):
     if pathname == "/":
         return [
-           html.H1('Relatório de Covid-19 com Foco no Estado do Amazonas',
-           style={'textAlign': 'center'})
+           html.H1('Relatório de Covid-19 com Foco no Estado do Amazonas', style={'textAlign': 'center'}),
+           dcc.Markdown("""
+           \n
+           \n
+           Projeto pessoal para fins educativos com finalidade de uma análise extensa, crítica e exploratória dos dados de Covid-19 dentro do estado do Amazonas. Para isso,
+           utilizo um [banco de dados](https://github.com/wcota/covid19br) junto a informações da Secretaria Estado de Saúde do Amazonas.""", style={'textAlign': 'justify-all'}),
+           dcc.Markdown("""
+           Covid19map: https://www.covid19map.com.br/case_map \n
+           Repositório deste projeto: https://github.com/HeyLucasLeao/HeyLucasLeao.github.io \n
+           Contato: https://t.me/heylucasleao \n
+            LinkedIn: https://www.linkedin.com/in/lucas-le%C3%A3o-698a49206/""", style={'textAlign': 'justify-all'})
         ]
     elif pathname == "/pagina-1":
         return [
@@ -1027,11 +862,13 @@ def render_page_content(pathname):
         ]
     elif pathname == "/pagina-3":
         return [
-            dcc.Graph(figure=show_figure3())
+            dcc.Graph(figure=show_figure1()),
+            dcc.Markdown('###### Coloração de gráfico referente a intensidade. Tamanho de bolha referente ao número de casos.')
         ]
     elif pathname == "/pagina-4":
         return [
-            dcc.Graph(figure=show_figure4())
+            dcc.Graph(figure=show_figure4()),
+            dcc.Markdown('###### Colorações relativas a: (1). N.º de Óbitos; (2). Intensidade')
         ]
     elif pathname == "/pagina-5":
         return [
@@ -1043,7 +880,8 @@ def render_page_content(pathname):
         ]
     elif pathname == "/pagina-7":
         return [
-            dcc.Graph(figure=pred)
+            dcc.Graph(figure=pred),
+            dcc.Markdown(f'###### Média de erro percentual absoluto médio simétrico: {smape} %')
         ]
     elif pathname == "/pagina-8":
         return [

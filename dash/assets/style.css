@@ -1,9 +1,9 @@
 :root {
     --global-font-size: 12px;
     --global-line-height: 1.4em;
-    --background-color: #ffffff;
+    --background-color: #222222;
     --font-color: #ffffff;
-    --invert-font-color: #222225;
+    --invert-font-color: #222222;
     --primary-color: #62c4ff;
     --secondary-color: #a3abba;
     --tertiary-color: #a3abba;
@@ -13,4 +13,9 @@
     --font-stack: Menlo, Monaco, Lucida Console, Liberation Mono, Dejavu Sans Mono,
     Bitstream Vera Sans Mono, Courier New, monospace, serif;
     --input-style: solid;
+}
+
+.nav-pills .nav-link.active {
+    color: #fff;
+    background-color: #00bc8c;
 }
