@@ -2,13 +2,11 @@ import pandas as pd
 import datetime as dt
 from os import system
 from time import sleep
-from os import environ
 from subprocess import Popen
 from datetime import timedelta
 
 x = 0
 
-PREFIX_PATH = environ.get('REPO_PATH')
 
 """verifica caso haja dados atualizados dentro do dataset. 
 Caso seja verdade, inicia-se abertura dos outros algoritmos."""
@@ -46,10 +44,10 @@ while True:
         except TimeoutError:
             raise SystemExit(0)
 
-        with open(PREFIX_PATH + r'\push_automatico\upar_dados.py', "r") as f:
+        with open(r'./push_automatico/upar_dados.py', "r") as f:
             exec(f.read())
 
-        with open(PREFIX_PATH + r'\e-mail\enviar_email.py', "r") as f:
+        with open(r'./e-mail/enviar_email.py', "r") as f:
             exec(f.read())
             break
     else:
