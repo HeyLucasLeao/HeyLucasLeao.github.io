@@ -37,6 +37,7 @@ from dash import Dash
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
+from dash.dependencies import Input, Output
 
 
 import warnings
@@ -64,6 +65,8 @@ df.drop('country', axis=1, inplace=True)
 
 gjson_estados_brasileiros = gpd.read_file(r"https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson")
 gjson_municipios_amazonas = gpd.read_file(r"https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-13-mun.json")
+gjson_estados_brasileiros.set_index('id', inplace=True)
+gjson_municipios_amazonas.set_index('id', inplace=True)
 dici = dict([(x,y) for x,y in zip(gjson_estados_brasileiros['sigla'], gjson_estados_brasileiros['name'])])
 
 
@@ -87,10 +90,55 @@ df_total_10_maiores_cidades.sort_values('city', inplace=True)
 total_por_estado = pd.read_csv('https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv')
 total_por_estado = total_por_estado.query(f"date == '{last_info}' and state != 'TOTAL'")
 total_por_estado['name'] = [dici[x] for x in total_por_estado['state']]
+total_casos_e_mortes_por_estado = total_por_estado
+total_casos_e_mortes_por_estado.reset_index(inplace=True)
+total_casos_e_mortes_por_estado['id'] = [(i + 1) for i in range(len(total_casos_e_mortes_por_estado['state']))]
 epocas_festivas = pd.merge(epocas_festivas(), 
                         total_de_casos_amazonas[['date','newCases', 'newDeaths']], 
                            on='date',
                            how='left').sort_values('date').dropna().reset_index()
+df_am = df.query("state == 'AM' and city != 'CASO SEM LOCALIZAÇÃO DEFINIDA/AM'")
+df_am = df_am.query(f"date == '{last_info}'")
+dici = dict([(x,y) for x,y in zip(gjson_municipios_amazonas.name, gjson_municipios_amazonas.index)])
+df_am['city'] = [x[:x.index('/')] for x in df_am['city']]
+df_am['id'] = [dici[x] for x in df_am['city']]
+
+total_de_casos_amazonas_por_mes = total_de_casos_amazonas.set_index('date').groupby(pd.Grouper(freq='M')).sum()[['newDeaths','newCases']]
+total_de_casos_amazonas_por_mes.reset_index(inplace=True)
+total_de_casos_amazonas_por_mes['taxa_de_letalidade'] = round(total_de_casos_amazonas_por_mes['newDeaths']/total_de_casos_amazonas_por_mes['newCases'] * 100, 2)
+
+total_de_casos_brasil = df.groupby('date').sum()
+total_de_casos_brasil.reset_index(inplace=True)
+
+#Criação de variaveis
+
+total_de_casos_amazonas['crescimento_novos_casos'] = (total_de_casos_amazonas['newCases'].diff() / total_de_casos_amazonas['newCases'].rolling(7).mean()) * 100
+total_de_casos_amazonas['crescimento_novos_obitos'] = (total_de_casos_amazonas['newDeaths'].diff() / total_de_casos_amazonas['newCases'].rolling(7).mean()) * 100
+crescimento_percentual = pd.merge(total_de_casos_amazonas[['date','crescimento_novos_casos']], 
+                                  total_de_casos_amazonas[['date', 'crescimento_novos_obitos']], 
+                                  on='date', how='left')
+crescimento_de_casos = crescimento_percentual[['date', 'crescimento_novos_casos']]
+crescimento_de_casos.insert(1,column= 'variavel',value='crescimento_novos_casos')
+crescimento_de_casos.rename(columns={'crescimento_novos_casos': 'valor'}, inplace=True)
+
+crescimento_de_obitos = crescimento_percentual[['date', 'crescimento_novos_obitos']]
+crescimento_de_obitos.insert(1,column= 'variavel',value='crescimento_novos_obitos')
+crescimento_de_obitos.rename(columns={'crescimento_novos_obitos': 'valor'}, inplace=True)
+
+crescimento = pd.concat([crescimento_de_casos, crescimento_de_obitos])
+
+crescimento.sort_values(['date','variavel'], inplace=True)
+dici = {'crescimento_novos_obitos': "Óbitos", 'crescimento_novos_casos': 'Casos'}
+crescimento['variavel'] = crescimento['variavel'].apply(lambda x: dici[x])
+
+media_casos_por_dia_da_semana = total_de_casos_amazonas.groupby('dia_da_semana')[['newCases', 'newDeaths', 'crescimento_novos_casos']].mean().round().reindex(['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'])
+media_casos_por_dia_da_semana['newDeaths'] = [round(x) for x in media_casos_por_dia_da_semana['newDeaths']]
+media_casos_por_dia_da_semana['newCases'] = [round(x) for x in media_casos_por_dia_da_semana['newCases']]
+media_casos_por_dia_da_semana['crescimento_novos_casos'] = [round(x) for x in media_casos_por_dia_da_semana['crescimento_novos_casos']]
+media_casos_por_dia_da_semana.rename(columns={'newDeaths': 'Novos Óbitos',
+                                             'newCases': 'Novos Casos',
+                                             'crescimento': 'Crescimento'}, inplace=True)
+media_casos_por_dia_da_semana.rename_axis('Dia da Semana', inplace=True)
 
 def dados_apresentaveis(x):
     x = round(x)
@@ -110,8 +158,8 @@ _, trend_newDeaths = hpfilter(total_de_casos_amazonas['newDeaths'])
 trend_newDeaths = trend_newDeaths.apply(to_zero).round()
 
 def show_figure1():
-    fig = make_subplots(subplot_titles=('Dez Cidades com os Maiores Casos & Mortes Registrados por COVID-19', 
-                                        'Relação de Casos & Mortes por 100k Habitantes por Estado'),
+    fig = make_subplots(subplot_titles=('10 Cidades com os Maiores Casos & Óbitos Registrados por COVID-19', 
+                                        'Relação de Casos & Óbitos por 100k Habitantes por Estado'),
                         rows=1, cols=2)
 
     ### Configuração de gráfico a esquerda
@@ -274,10 +322,6 @@ def tables():
         return total_por_estado_tabela, df_am_tabela,  total_de_casos_amazonas_tabela
 
 def show_figure2():
-    total_casos_e_mortes_por_estado = total_por_estado
-    total_casos_e_mortes_por_estado.reset_index(inplace=True)
-    total_casos_e_mortes_por_estado['id'] = [(i + 1) for i in range(len(total_casos_e_mortes_por_estado['state']))]
-    gjson_estados_brasileiros.set_index('id', inplace=True)
     fig = px.choropleth_mapbox(data_frame=total_casos_e_mortes_por_estado, 
                                locations= 'id', 
                                geojson=gjson_estados_brasileiros, 
@@ -297,12 +341,6 @@ def show_figure2():
     return fig
 
 def show_figure3():
-    df_am = df.query("state == 'AM' and city != 'CASO SEM LOCALIZAÇÃO DEFINIDA/AM'")
-    df_am = df_am.query(f"date == '{last_info}'")
-    gjson_municipios_amazonas.set_index('id', inplace=True)
-    dici = dict([(x,y) for x,y in zip(gjson_municipios_amazonas.name, gjson_municipios_amazonas.index)])
-    df_am['city'] = [x[:x.index('/')] for x in df_am['city']]
-    df_am['id'] = [dici[x] for x in df_am['city']]
     fig = px.choropleth_mapbox(data_frame=df_am, 
                                locations= 'id', 
                                geojson=gjson_municipios_amazonas, 
@@ -333,10 +371,6 @@ def show_figure3():
 
 
 def show_figure4():
-    total_de_casos_amazonas_por_mes = total_de_casos_amazonas.set_index('date').groupby(pd.Grouper(freq='M')).sum()[['newDeaths','newCases']]
-    total_de_casos_amazonas_por_mes.reset_index(inplace=True)
-    total_de_casos_amazonas_por_mes['taxa_de_letalidade'] = round(total_de_casos_amazonas_por_mes['newDeaths']/total_de_casos_amazonas_por_mes['newCases'] * 100, 2)
-    
     fig = make_subplots(subplot_titles=('Casos & Óbitos',
                                        'Taxa de letalidade (CFR)'), 
                         rows=1, cols=2)
@@ -393,8 +427,6 @@ def show_figure4():
 
 
 def show_figure5():
-    total_de_casos_brasil = df.groupby('date').sum()
-    total_de_casos_brasil.reset_index(inplace=True)
     fig = make_subplots(subplot_titles=('Brasil',
                                        'Amazonas'),
                         rows=1, 
@@ -524,31 +556,7 @@ def show_figure7():
 
 
 
-def show_figure8():
-        
-    #Criação de variaveis
-    
-    total_de_casos_amazonas['crescimento_novos_casos'] = (total_de_casos_amazonas['newCases'].diff() / total_de_casos_amazonas['newCases'].rolling(7).mean()) * 100
-    total_de_casos_amazonas['crescimento_novos_obitos'] = (total_de_casos_amazonas['newDeaths'].diff() / total_de_casos_amazonas['newCases'].rolling(7).mean()) * 100
-
-    crescimento_percentual = pd.merge(total_de_casos_amazonas[['date','crescimento_novos_casos']], 
-                                      total_de_casos_amazonas[['date', 'crescimento_novos_obitos']], 
-                                      on='date', how='left')
-    crescimento_de_casos = crescimento_percentual[['date', 'crescimento_novos_casos']]
-    crescimento_de_casos.insert(1,column= 'variavel',value='crescimento_novos_casos')
-    crescimento_de_casos.rename(columns={'crescimento_novos_casos': 'valor'}, inplace=True)
-    
-    crescimento_de_obitos = crescimento_percentual[['date', 'crescimento_novos_obitos']]
-    crescimento_de_obitos.insert(1,column= 'variavel',value='crescimento_novos_obitos')
-    crescimento_de_obitos.rename(columns={'crescimento_novos_obitos': 'valor'}, inplace=True)
-    
-    crescimento = pd.concat([crescimento_de_casos, crescimento_de_obitos])
-    
-    crescimento.sort_values(['date','variavel'], inplace=True)
-    dici = {'crescimento_novos_obitos': "Óbitos", 'crescimento_novos_casos': 'Casos'}
-    crescimento['variavel'] = crescimento['variavel'].apply(lambda x: dici[x])
-    
-    
+def show_figure8():    
     ###Criação de Gráfico
     fig = px.bar(crescimento.tail(14).round(2), 
                   y='valor',
@@ -580,16 +588,6 @@ def show_figure8():
     return fig
 
 def show_figure9():
-    
-    media_casos_por_dia_da_semana = total_de_casos_amazonas.groupby('dia_da_semana')[['newCases', 'newDeaths', 'crescimento_novos_casos']].mean().round().reindex(['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'])
-    media_casos_por_dia_da_semana['newDeaths'] = [round(x) for x in media_casos_por_dia_da_semana['newDeaths']]
-    media_casos_por_dia_da_semana['newCases'] = [round(x) for x in media_casos_por_dia_da_semana['newCases']]
-    media_casos_por_dia_da_semana['crescimento_novos_casos'] = [round(x) for x in media_casos_por_dia_da_semana['crescimento_novos_casos']]
-    media_casos_por_dia_da_semana.rename(columns={'newDeaths': 'Novos Óbitos',
-                                                 'newCases': 'Novos Casos',
-                                                 'crescimento': 'Crescimento'}, inplace=True)
-    media_casos_por_dia_da_semana.rename_axis('Dia da Semana', inplace=True)
-    
     fig = px.bar(media_casos_por_dia_da_semana, 
                  y='Novos Casos', 
                  x=media_casos_por_dia_da_semana.index, 
@@ -854,26 +852,24 @@ def show_figure10():
                     tickangle=35)
     return fig
 
+fh = np.arange(1, 14 + 1)
+y = pd.Series(data=trend_newCases.values, index=total_de_casos_amazonas.date)
+y.index.freq = 'D'
+model = LGBMRegressor(random_state=4,
+    learning_rate = 0.04591301953670739, 
+    num_leaves = 45, 
+    min_child_samples = 1, 
+    subsample = 0.05,
+    colsample_bytree = 0.9828905761860228,
+    subsample_freq=1,
+    n_estimators=685)
+reg = make_reduction(estimator=model, window_length=14)
+cv = ExpandingWindowSplitter(initial_window=60)
+cross_val = evaluate(forecaster=reg, y=y, cv=cv, strategy="refit", return_data=True)
+reg.fit(y)
+y_pred = reg.predict(fh).round()
+
 def show_figure11():
-
-    fh = np.arange(1, 14 + 1)
-    y = pd.Series(data=trend_newCases.values, index=total_de_casos_amazonas.date)
-    y.index.freq = 'D'
-
-    model = LGBMRegressor(random_state=4,
-        learning_rate = 0.04591301953670739, 
-        num_leaves = 45, 
-        min_child_samples = 1, 
-        subsample = 0.05,
-        colsample_bytree = 0.9828905761860228,
-        subsample_freq=1,
-        n_estimators=685)
-    reg = make_reduction(estimator=model, window_length=14)
-    cv = ExpandingWindowSplitter(initial_window=60)
-    cross_val = evaluate(forecaster=reg, y=y, cv=cv, strategy="refit", return_data=True)
-    reg.fit(y)
-    y_pred = reg.predict(fh).round()
-
     fig = go.Figure()
     
     
@@ -952,12 +948,13 @@ def show_figure11():
 #data = pd.to_datetime(data, format="%d/%m/%y")
 #data = data.strftime("%y/%m/%d")
 #f"Data de Relatório de Ocupação: {data}"
+total_por_estado_tabela, df_am_tabela,  total_de_casos_amazonas_tabela = tables()
 
-app = Dash(__name__, external_stylesheets = dbc.themes.BOOTSTRAP)
+app = Dash(__name__, external_stylesheets = [dbc.themes.BOOTSTRAP])
 
 # styling the sidebar
 SIDEBAR_STYLE = {
-    "position": "fixed",
+    "position": "absolute",
     "top": 0,
     "left": 0,
     "bottom": 0,
@@ -973,44 +970,96 @@ CONTENT_STYLE = {
     "padding": "2rem 1rem",
 }
 
-tab_style = {
-    'borderBottom': '1px solid #ffffff',
-    'padding': '6px',
-    'border-radius': '15px',
-    'font-color': '#222225',
-    'background-color': '#ffffff',
- 
-}
- 
-tab_selected_style = {
-    'borderTop': '1px solid #ffffff',
-    'borderBottom': '1px solid #ffffff',
-    'backgroundColor': '#ffffff',
-    'font-color': '#ffffff',
-    'padding': '6px',
-    'border-radius': '15px',
-    'align-items': 'center'
-}
 pred, smape = show_figure11()
 
-app.layout = html.Div([
-    dcc.Tabs([
-        html.H2("Sidebar", className="display-4"),
+sidebar = html.Div([
+        html.H2("Relatório Covid-19", className="display-4"),
         html.Hr(),
         html.P(
-            "Number of students per education level", className="lead"
+            "Tópicos", className="lead"
         ),
-        dcc.Tab(label='Gráfico de Dispersão', children=[dcc.Graph(figure=show_figure1())], style = tab_style, selected_style = tab_selected_style),
-        dcc.Tab(label='Casos & Óbitos por Estado & Munícipio', children=[dcc.Graph(figure=show_figure2()), dcc.Graph(figure=show_figure3())], style = tab_style, selected_style = tab_selected_style),
-        dcc.Tab(label="Frequência Mensal no Amazonas", children=[dcc.Graph(figure=show_figure4())], style = tab_style, selected_style = tab_selected_style),
-        dcc.Tab(label="Quadro Evolutivo de Casos", children=[dcc.Graph(figure=show_figure5())], style = tab_style, selected_style = tab_selected_style),
-        dcc.Tab(label="N.º Diário de Casos & Óbitos no Amazonas", children=[dcc.Graph(figure=show_figure6()), dcc.Graph(figure=show_figure7())], style = tab_style, selected_style = tab_selected_style),
-        dcc.Tab(label='Crescimento dos Últimos 07 dias', children=[dcc.Graph(figure=show_figure8())], style = tab_style, selected_style = tab_selected_style),
-        dcc.Tab(label='Média de Registros por Dia da Semana', children=[dcc.Graph(figure=show_figure9())], style = tab_style, selected_style = tab_selected_style),
-        dcc.Tab(label='Taxa de Ocupação de Hospital na Capital', children=[dcc.Graph(figure=show_figure10())], style = tab_style, selected_style = tab_selected_style),
-        dcc.Tab(label='Predição de Tendência', children=[dcc.Graph(figure=pred)], style = tab_style, selected_style = tab_selected_style)
-            ], style=SIDEBAR_STYLE, vertical=True)
-                ])
+        dbc.Nav(
+                    [
+        dbc.NavLink('Home', href='/', active='exact'),
+        dbc.NavLink("N.º Diário de Casos & Óbitos no Amazonas", href='/pagina-1', active='exact'),
+        dbc.NavLink('Casos & Óbitos por Estado & Munícipio', href='/pagina-2', active='exact'),
+        dbc.NavLink('Relação Casos & Óbitos por Estado', href='/pagina-3', active='exact'),
+        dbc.NavLink("Frequência Mensal no Amazonas", href='/pagina-4', active='exact'),
+        dbc.NavLink('Crescimento dos Últimos 07 dias', href='/pagina-5', active='exact'),
+        dbc.NavLink('Taxa de Ocupação de Hospital na Capital', href='/pagina-6', active='exact'),
+        dbc.NavLink('Predição de Tendência', href='/pagina-7', active='exact'),
+        dbc.NavLink("Quadro Evolutivo de Casos", href='/pagina-8', active='exact'),
+        dbc.NavLink('Média de Registros por Dia da Semana', href='/pagina-9', active='exact'),
+                    ], 
+                    vertical=True, 
+                    pills=True
+                )
+            ],
+            style=SIDEBAR_STYLE,
+)
 
+content = html.Div(id='page-content', children=[], style=CONTENT_STYLE)
+
+app.layout = html.Div([
+    dcc.Location(id='url'),
+    sidebar,
+    content
+])
+
+@app.callback(
+    Output("page-content", 'children'),
+    [Input("url", "pathname")]
+)
+
+def render_page_content(pathname):
+    if pathname == "/":
+        return [
+           html.H1('Relatório de Covid-19 com Foco no Estado do Amazonas',
+           style={'textAlign': 'center'})
+        ]
+    elif pathname == "/pagina-1":
+        return [
+           dcc.Graph(figure=show_figure6()), dcc.Graph(figure=show_figure7())
+        ]
+    elif pathname == "/pagina-2":
+        return [
+            dcc.Graph(figure=show_figure2()), dcc.Graph(figure=show_figure3())
+        ]
+    elif pathname == "/pagina-3":
+        return [
+            dcc.Graph(figure=show_figure3())
+        ]
+    elif pathname == "/pagina-4":
+        return [
+            dcc.Graph(figure=show_figure4())
+        ]
+    elif pathname == "/pagina-5":
+        return [
+            dcc.Graph(figure=show_figure8())
+        ]
+    elif pathname == "/pagina-6":
+        return [
+            dcc.Graph(figure=show_figure10())
+        ]
+    elif pathname == "/pagina-7":
+        return [
+            dcc.Graph(figure=pred)
+        ]
+    elif pathname == "/pagina-8":
+        return [
+            dcc.Graph(figure=show_figure5())
+        ]
+    elif pathname == "/pagina-9":
+        return [
+            dcc.Graph(figure=show_figure9())
+        ]
+    # If the user tries to reach a different page, return a 404 message
+    return dbc.Jumbotron(
+        [
+            html.H1("404: Not found", className="text-danger"),
+            html.Hr(),
+            html.P(f"The pathname {pathname} was not recognised..."),
+        ]
+    )
 if __name__ == '__main__':
     app.run_server(debug=True)
