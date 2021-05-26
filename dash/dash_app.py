@@ -8,25 +8,12 @@
 import plotly.express as px
 import pandas as pd
 import numpy as np
-import requests
-import gzip
 import plotly.graph_objects as go
-import datetime
 from statsmodels.tsa.filters.hp_filter import hpfilter
-from tabula import read_pdf
-from datetime import datetime
-from datetime import timedelta
-from datetime import datetime
 import geopandas as gpd
-import requests
-import urllib.request
-from os import listdir
-import csv
 from plotly.subplots import make_subplots
 from functions_to_date import dias, epocas_festivas, meses_anos, traduzir_eixo_x, dias_traduzidos
-from os import environ
 
-from sktime.performance_metrics.forecasting import smape_loss
 from lightgbm import LGBMRegressor
 from sktime.forecasting.model_selection import ExpandingWindowSplitter
 from sktime.forecasting.model_evaluation import evaluate
@@ -38,7 +25,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
-
+import dash_table
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -46,9 +33,9 @@ warnings.filterwarnings("ignore")
 PATH_PDF = r'../raspagem_dos_boletins_diarios/relatorios'
 PATH_CSV = r'../raspagem_dos_boletins_diarios/raw_csvs'
 GLOBAL_TEMPLATE = 'plotly_dark'
-MAPBOX_TOKEN = environ.get('MAPBOX_TOKEN')
+MAPBOX_TOKEN = 'pk.eyJ1IjoiaGV5bHVjYXNsZWFvIiwiYSI6ImNrcDRqeW1yNzAzaHIycHNiZWo1bHBqeGkifQ.kw4Buc12S2g1CTZ7KhXwYA'
 rgb = 'rgb(34, 34, 34)'
-
+red = '#812929'
 url = 'https://github.com/wcota/covid19br/blob/master/cases-brazil-cities-time.csv.gz?raw=true'
 df = pd.read_csv(url, compression='gzip')
 df['date'] = pd.to_datetime(df['date'])
@@ -474,7 +461,7 @@ def show_figure6():
 
     fig.add_trace(go.Scatter(x=total_de_casos_amazonas['date'],
                              y=trend_newCases.round(), 
-                             line=dict(color='darkred', width=1), 
+                             line=dict(color=red, width=1), 
                              name="Holt-Winters (SEHW) - Casos",
                              mode='lines', 
                              hoverinfo="y", 
@@ -484,7 +471,7 @@ def show_figure6():
 
     fig.add_trace(go.Scatter(x=total_de_casos_amazonas['date'], 
                              y=trend_newDeaths, 
-                             line=dict(color='#650000', width=1), 
+                             line=dict(color=red, width=1), 
                              name="Holt-Winters (SEHW) - Óbitos",
                              mode='lines',
                              hoverinfo='y' , 
@@ -520,7 +507,7 @@ def show_figure7():
     fig.update_traces(hovertemplate="%{y}", name='Óbitos')
     fig.add_trace(go.Scatter(x=total_de_casos_amazonas['date'], 
                              y=trend_newDeaths, 
-                             line=dict(color='#650000', width=1), 
+                             line=dict(color=red, width=1), 
                              name="Holt-Winters (SEHW) - Óbitos",
                              mode='lines',
                              hoverinfo='y' , 
@@ -727,7 +714,7 @@ def show_figure11():
 
     fig.add_trace(go.Scatter(x=total_de_casos_amazonas['date'].tail(30),
                              y=trend_newCases.round().tail(30), 
-                             line=dict(color='darkred', width=1), 
+                             line=dict(color=red, width=1), 
                              name="Holt-Winters (SEHW) - Casos",
                              mode='lines', 
                              hoverinfo="y", 
@@ -737,7 +724,7 @@ def show_figure11():
 
     fig.add_trace(go.Scatter(x=y_pred.index, 
                              y=y_pred.values, 
-                             line=dict(color='#650000', width=1), 
+                             line=dict(color=red, width=1), 
                              name=f"Predição por LightGBM",
                              mode='lines+markers',
                              hoverinfo='y' , 
@@ -815,7 +802,9 @@ sidebar = html.Div([
         dbc.NavLink('Taxa de Ocupação de Hospital na Capital', href='/pagina-6', active='exact'),
         dbc.NavLink('Predição de Tendência', href='/pagina-7', active='exact'),
         dbc.NavLink("Quadro Evolutivo de Casos", href='/pagina-8', active='exact'),
-        dbc.NavLink('Média de Registros por Dia da Semana', href='/pagina-9', active='exact'),
+        dbc.NavLink('Ranking Nacional de Óbitos por 100k', href='/pagina-9', active='exact'),
+        dbc.NavLink('Ranking Municipal de Óbitos por 100k', href='/pagina-10', active='exact'),
+        dbc.NavLink('Média de Registros por Dia da Semana', href='/pagina-11', active='exact'),
                     ], 
                     vertical=True, 
                     pills=True
@@ -840,13 +829,14 @@ app.layout = html.Div([
 def render_page_content(pathname):
     if pathname == "/":
         return [
-           html.H1('Relatório de Covid-19 com Foco no Estado do Amazonas', style={'textAlign': 'center'}),
+           html.H1('Dados sobre Covid-19 com Foco no Estado do Amazonas', style={'textAlign': 'center'}),
            dcc.Markdown("""
            \n
            \n
            Projeto pessoal para fins educativos com finalidade de uma análise extensa, crítica e exploratória dos dados de Covid-19 dentro do estado do Amazonas. Para isso,
            utilizo um [banco de dados](https://github.com/wcota/covid19br) junto a informações da Secretaria Estado de Saúde do Amazonas.""", style={'textAlign': 'justify-all'}),
            dcc.Markdown("""
+           Notícias da Fundação de Vigilância em Saúde do Amazonas (FVS-AM): https://share.streamlit.io/heylucasleao/noticias-fvs-am/main \n
            Covid19map: https://www.covid19map.com.br/case_map \n
            Repositório deste projeto: https://github.com/HeyLucasLeao/HeyLucasLeao.github.io \n
            Contato: https://t.me/heylucasleao \n
@@ -888,6 +878,50 @@ def render_page_content(pathname):
             dcc.Graph(figure=show_figure5())
         ]
     elif pathname == "/pagina-9":
+        return [
+            dash_table.DataTable(id='dt1',
+            columns=[{"name": i, "id": i} for i in ranking_nacional.columns],
+            data=ranking_nacional.to_dict('records'),
+            style_cell={'textAlign': 'left', 
+                        'padding': '5px',
+                        'backgroundColor': 'rgb(34, 34, 34)',
+                        },
+            style_header={
+                'backgroundColor': 'rgb(34, 34, 34)',
+                'fontWeight': 'bold',
+                'color': "#fff"
+            },
+            style_as_list_view=True,
+            style_data_conditional=[
+                {
+                    'if': {'row_index': 'odd'},
+                    'backgroundColor': 'rgb(50, 50, 50)'
+                }],
+            )
+        ]
+    elif pathname == "/pagina-10":
+        return [
+            dash_table.DataTable(id='dt2',
+            columns=[{"name": i, "id": i} for i in ranking_municipal.columns],
+            data=ranking_municipal.to_dict('records'),
+            style_cell={'textAlign': 'left', 
+                        'padding': '5px',
+                        'backgroundColor': 'rgb(34, 34, 34)',
+                        },
+            style_header={
+                'backgroundColor': 'rgb(34, 34, 34)',
+                'fontWeight': 'bold',
+                'color': "#fff"
+            },
+            style_as_list_view=True,
+            style_data_conditional=[
+                {
+                    'if': {'row_index': 'odd'},
+                    'backgroundColor': 'rgb(50, 50, 50)'
+                }]
+                )
+        ]
+    elif pathname == "/pagina-11":
         return [
             dcc.Graph(figure=show_figure9())
         ]

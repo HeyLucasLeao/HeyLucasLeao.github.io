@@ -1,7 +1,7 @@
 :root {
     --global-font-size: 12px;
     --global-line-height: 1.4em;
-    --background-color: #222222;
+    --background-color: rgb(34, 34, 34);
     --font-color: #ffffff;
     --invert-font-color: #222222;
     --primary-color: #62c4ff;
