@@ -1,3 +1,4 @@
+from shutil import Error
 import pandas as pd
 import urllib.request
 from os import listdir
@@ -50,10 +51,7 @@ def atualizar_csvs():
     download_file(link)
     
     atualizacao_de_csvs = taxa_de_ocupacao.copy()
-    atualizacao_de_csvs['unidade'] = atualizacao_de_csvs['unidade'].apply(change_rows)
-    
-    normalizados = atualizacao_de_csvs.copy()
-    
+    atualizacao_de_csvs['unidade'] = atualizacao_de_csvs['unidade'].apply(change_rows)    
     
     atualizacao_de_csvs = atualizacao_de_csvs.T
 
@@ -155,3 +153,5 @@ if len(taxa_de_ocupacao.columns) == 7 and taxa_de_ocupacao.isnull().sum().sum() 
 else:
     print('Taxa não extraída corretamente, favor verificar.')
     sleep(10)
+    raise Error
+    

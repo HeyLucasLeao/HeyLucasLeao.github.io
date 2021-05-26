@@ -1,3 +1,4 @@
+from shutil import Error
 import pandas as pd
 import datetime as dt
 from os import system
@@ -41,7 +42,7 @@ while True:
              shell=True, 
              cwd=r'./raspagem_dos_boletins_diarios'), 
                 timeout=360)
-        except TimeoutError:
+        except Error:
             raise SystemExit(0)
 
         with open(r'./push_automatico/upar_dados.py', "r") as f:
