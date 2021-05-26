@@ -4,6 +4,7 @@ from os import system
 from time import sleep
 from os import environ
 from subprocess import Popen
+from datetime import timedelta
 
 x = 0
 
@@ -16,7 +17,7 @@ while True:
     try:
         url = 'https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-cities.csv'
         df = pd.read_csv(url)
-        data = str(dt.datetime.now())[:10]
+        data = str(dt.datetime.now() - timedelta(1))[:10] 
         df_estado = pd.read_csv(
             'https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv')
         df_estado_soma_casos = df_estado.query(
@@ -37,9 +38,10 @@ while True:
     if soma_casos > 0 and df_estado_soma_casos > 0:
         try:
             print('Atualizando csvs...')
-            Popen.wait(Popen('conda run -n covid-19-am python -m updating.py',
+            from subprocess import Popen
+            Popen.wait(Popen('conda run -n covid-19-am python updating.py',
              shell=True, 
-             cwd=r'./raspagem_dos_boletins_diarios/'), 
+             cwd=r'./raspagem_dos_boletins_diarios'), 
                 timeout=360)
         except TimeoutError:
             raise SystemExit(0)
