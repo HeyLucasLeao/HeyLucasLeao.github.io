@@ -3,6 +3,7 @@ import datetime as dt
 from os import system
 from time import sleep
 from os import environ
+from subprocess import Popen
 
 x = 0
 
@@ -35,8 +36,11 @@ while True:
 
     if soma_casos > 0 and df_estado_soma_casos > 0:
         try:
-            with open(PREFIX_PATH + r'\conversor_ipynb_html\converter.py', "r") as f:
-                exec(f.read())
+            print('Atualizando csvs...')
+            Popen.wait(Popen('conda run -n covid-19-am python -m updating.py',
+             shell=True, 
+             cwd=r'./raspagem_dos_boletins_diarios/'), 
+                timeout=360)
         except TimeoutError:
             raise SystemExit(0)
 
@@ -56,5 +60,6 @@ while True:
             sleep(60)
             system('cls')
         continue
+
 
 print("Processo finalizado.")
