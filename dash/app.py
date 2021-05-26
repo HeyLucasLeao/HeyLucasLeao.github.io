@@ -30,6 +30,13 @@ import dash_table
 import warnings
 warnings.filterwarnings("ignore")
 
+#----------------------------------------------------------------------------------------------
+
+app = Dash(__name__, external_stylesheets = [dbc.themes.DARKLY])
+server = app.server
+
+#----------------------------------------------------------------------------------------------
+
 PATH_PDF = r'../raspagem_dos_boletins_diarios/relatorios'
 PATH_CSV = r'../raspagem_dos_boletins_diarios/raw_csvs'
 GLOBAL_TEMPLATE = 'plotly_dark'
@@ -764,8 +771,6 @@ def show_figure11():
 
 ranking_nacional, ranking_municipal = tables()
 
-app = Dash(__name__, external_stylesheets = [dbc.themes.DARKLY])
-
 # styling the sidebar
 SIDEBAR_STYLE = {
     "position": "absolute",
@@ -928,10 +933,13 @@ def render_page_content(pathname):
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
-            html.H1("404: Not found", className="text-danger"),
+            html.H1("404: Não encontrado.", className="text-danger"),
             html.Hr(),
-            html.P(f"The pathname {pathname} was not recognised..."),
+            html.P(f"O endereço {pathname} não foi encontrado."),
         ]
     )
+
+#----------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     app.run_server(debug=True)
+#----------------------------------------------------------------------------------------------
